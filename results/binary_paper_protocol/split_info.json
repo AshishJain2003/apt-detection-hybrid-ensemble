@@ -1,0 +1,98 @@
+{
+  "experiment": "binary_paper_protocol",
+  "target": "Label",
+  "protocol": "paper",
+  "class_names": [
+    "Benign",
+    "APT"
+  ],
+  "features_selected": [
+    "Dst Port",
+    "Bwd Init Win Bytes",
+    "Flow Packets/s",
+    "Flow IAT Mean",
+    "Bwd Packet Length Max",
+    "Fwd Packet Length Max",
+    "Flow Duration",
+    "Fwd Packets/s",
+    "Total Length of Bwd Packet",
+    "Bwd IAT Mean",
+    "Total Length of Fwd Packet",
+    "Bwd IAT Min",
+    "Flow IAT Max",
+    "Fwd Packet Length Mean",
+    "Bwd IAT Total",
+    "Flow IAT Std",
+    "Fwd IAT Mean",
+    "Flow Bytes/s",
+    "Fwd Packet Length Std",
+    "Protocol_6",
+    "Total Fwd Packet",
+    "Bwd IAT Std",
+    "Bwd Packet Length Min",
+    "Packet Length Min",
+    "Fwd Packet Length Min",
+    "Down/Up Ratio",
+    "SYN Flag Count",
+    "Idle Std",
+    "Active Mean",
+    "Active Std"
+  ],
+  "n_after_correlation": 36,
+  "mutual_information": {
+    "Dst Port": 0.493299,
+    "Bwd Init Win Bytes": 0.445084,
+    "Flow Packets/s": 0.384797,
+    "Flow IAT Mean": 0.372372,
+    "Bwd Packet Length Max": 0.368607,
+    "Fwd Packet Length Max": 0.366748,
+    "Flow Duration": 0.363709,
+    "Fwd Packets/s": 0.356231,
+    "Total Length of Bwd Packet": 0.35309,
+    "Bwd IAT Mean": 0.336731,
+    "Total Length of Fwd Packet": 0.335488,
+    "Bwd IAT Min": 0.333339,
+    "Flow IAT Max": 0.330112,
+    "Fwd Packet Length Mean": 0.321051,
+    "Bwd IAT Total": 0.315486,
+    "Flow IAT Std": 0.297786,
+    "Fwd IAT Mean": 0.275775,
+    "Flow Bytes/s": 0.253941,
+    "Fwd Packet Length Std": 0.244311,
+    "Protocol_6": 0.223579,
+    "Total Fwd Packet": 0.222956,
+    "Bwd IAT Std": 0.217435,
+    "Bwd Packet Length Min": 0.197684,
+    "Packet Length Min": 0.174465,
+    "Fwd Packet Length Min": 0.162516,
+    "Down/Up Ratio": 0.158755,
+    "SYN Flag Count": 0.109515,
+    "Idle Std": 0.079766,
+    "Active Mean": 0.079637,
+    "Active Std": 0.068766,
+    "Bwd PSH Flags": 0.029041,
+    "Protocol_0": 0.025426,
+    "FIN Flag Count": 0.011273,
+    "ACK Flag Count": 0.007331,
+    "RST Flag Count": 0.003751,
+    "CWR Flag Count": 0.000829
+  },
+  "class_counts": {
+    "original": {
+      "Benign": 62454,
+      "APT": 18980
+    },
+    "after_smote_tomek": {
+      "Benign": 62454,
+      "APT": 61102
+    },
+    "train": {
+      "Benign": 43718,
+      "APT": 42771
+    },
+    "test": {
+      "Benign": 18736,
+      "APT": 18331
+    }
+  }
+}

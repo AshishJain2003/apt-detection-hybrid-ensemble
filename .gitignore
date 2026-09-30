@@ -1,0 +1,14 @@
+# Python environment and caches
+.venv/
+__pycache__/
+*.pyc
+
+# Dataset: fetch with `python src/download_data.py` (not redistributed here)
+data/raw/
+
+# Publisher copy of the reference paper: https://doi.org/10.1002/cpe.7865
+paper.pdf
+
+# OS / editor noise
+.DS_Store
+.vscode/

@@ -48,8 +48,10 @@ def load_dapt2020(raw_dir: Path = RAW_DIR) -> pd.DataFrame:
     for f in files:
         with open(f) as fh:
             has_header = fh.readline().startswith("Flow ID")
-        df = pd.read_csv(f, header=0 if has_header else None,
-                         names=None if has_header else columns, low_memory=False)
+        # round_trip parses every float exactly. pandas' default fast parser can differ in the
+        # last bit across versions/platforms, which changes duplicate detection and every split.
+        df = pd.read_csv(f, header=0 if has_header else None, names=None if has_header else columns,
+                         low_memory=False, float_precision="round_trip")
         df.columns = df.columns.str.strip()
         df["source_file"] = f.name
         frames.append(df)

@@ -16,6 +16,7 @@ from data_loader import load_dapt2020
 from preprocessing import clean
 
 ATTACKER_IPS = {"206.207.50.50", "184.98.36.245"}  # external red-team hosts in DAPT2020
+ATTACK_FREE = {"monday", "monday-pvt"}             # captures in which every flow is labelled normal
 MODEL = "Proposed hybrid (RF+XGB)"
 
 
@@ -36,26 +37,42 @@ def main():
                                (test["Label"] == 1) & (test["pred"] == 0)], ["FP", "FN"], "")
 
     benign = test[test["Label"] == 0]
+    fp = benign["error"] == "FP"
     fp_by = (benign.groupby(["capture", "attacker_host"])
              .agg(benign_flows=("error", "size"), false_positives=("error", lambda s: (s == "FP").sum())))
     fp_by["FPR"] = (fp_by["false_positives"] / fp_by["benign_flows"]).map("{:.2%}".format)
-    fn_by = (test[test["Label"] == 1].groupby("Activity")
-             .agg(apt_flows=("error", "size"), missed=("error", lambda s: (s == "FN").sum())))
+
+    apt = test[test["Label"] == 1]
+    fn_by = (apt.groupby("Activity")
+             .agg(apt_flows=("error", "size"), missed=("error", lambda s: (s == "FN").sum()))
+             .sort_values("missed", ascending=False))
+    n_fn = int(fn_by["missed"].sum())
+    fn_by["share of all misses"] = (fn_by["missed"] / n_fn).map("{:.1%}".format)
     fn_by["miss rate"] = (fn_by["missed"] / fn_by["apt_flows"]).map("{:.1%}".format)
 
-    n_fp = int((test["error"] == "FP").sum())
-    fp_attacker = int(((test["error"] == "FP") & test["attacker_host"]).sum())
-    fpr_all = n_fp / len(benign)
-    clean_benign = benign[~benign["attacker_host"]]
-    fpr_excl = (clean_benign["error"] == "FP").mean()
+    n_fp = int(fp.sum())
+    fp_attacker = int((fp & benign["attacker_host"]).sum())
+    fp_attack_free = int((fp & benign["capture"].isin(ATTACK_FREE)).sum())
+    attacker_on_attack_free = int((test["capture"].isin(ATTACK_FREE) & test["attacker_host"]).sum())
+    no_attacker = benign[~benign["attacker_host"]]
+    fpr_excl = (no_attacker["error"] == "FP").mean()
+    top = fn_by.index[0]
 
     lines = [f"# Error analysis: {MODEL}, leakage-free binary test set", "",
-             f"- False positives: {n_fp:,} of {len(benign):,} benign test flows (FPR {fpr_all:.2%}).",
-             f"- {fp_attacker:,} of those false positives ({fp_attacker / max(n_fp, 1):.1%}) are 'benign'-labelled "
-             f"flows to/from an external attacker host ({', '.join(sorted(ATTACKER_IPS))}).",
+             "## False positives", "",
+             f"- {n_fp:,} false positives out of {len(benign):,} benign test flows (FPR {n_fp / len(benign):.2%}).",
+             f"- {fp_attacker:,} of them ({fp_attacker / n_fp:.1%}) are benign-labelled flows to or from an external "
+             f"attacker host ({', '.join(sorted(ATTACKER_IPS))}). This may indicate label noise, but it is not proof: "
+             f"the attacker hosts also appear in {attacker_on_attack_free:,} test flows of the attack-free Monday captures.",
+             f"- {fp_attack_free:,} of them ({fp_attack_free / n_fp:.1%}) fall in the Monday captures, where no flow is labelled "
+             "as an attack. These are genuine false alarms on normal traffic.",
              f"- FPR on benign flows that do not involve an attacker host: {fpr_excl:.2%}.", "",
-             "## False positives by capture file", "", fp_by.to_markdown(), "",
-             "## Missed APT flows by activity", "", fn_by.to_markdown(), ""]
+             "### By capture file", "", fp_by.to_markdown(), "",
+             "## Missed APT flows (false negatives)", "",
+             f"- {n_fn:,} APT test flows are missed. By count, most are {top} "
+             f"({int(fn_by.loc[top, 'missed']):,} of {n_fn:,}).",
+             "- The rare, low-volume activities have the highest miss *rates* but contribute few misses in absolute terms.", "",
+             fn_by.to_markdown(), ""]
     (out_dir / "error_analysis.md").write_text("\n".join(lines))
     print("\n".join(lines))
 

@@ -57,8 +57,10 @@ def mutual_information_ranking(X: pd.DataFrame, y, seed: int = config.SEED) -> p
 def _smote_tomek(X, y, seed):
     # SMOTE needs k_neighbors < size of the smallest class (Data Exfiltration is tiny).
     k = int(min(5, pd.Series(y).value_counts().min() - 1))
+    # sampling_strategy="all" is SMOTETomek's own default: Tomek links are removed from every
+    # class. (TomekLinks' standalone default would clean only one class after balancing.)
     st = SMOTETomek(smote=SMOTE(k_neighbors=k, random_state=seed),
-                    tomek=TomekLinks(n_jobs=-1), random_state=seed)
+                    tomek=TomekLinks(sampling_strategy="all", n_jobs=-1), random_state=seed)
     X_res, y_res = st.fit_resample(X, y)
     return X_res.reset_index(drop=True), np.asarray(y_res)
 
